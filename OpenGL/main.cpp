@@ -5,6 +5,67 @@
 using namespace std;
 
 const GLint WIDTH = 800, HEIGHT = 600;
+GLuint VAO,VBO,shaderProgram; 
+// VAO = espaço para alocação de itens
+// VBO = item/dado a ser alocado
+
+static const char* vertexShader = "					\n\
+	#version 330									\n\
+													\n\
+	layout(location=0) in vec2 pos;					\n\
+													\n\
+	void main(){									\n\
+		gl_position = vec4(pos.x,pos.y, 0.0, 1.0)	\n\
+	}												\n\
+"; //posionamento de x e y na tela (forma de transferencia de dados: layout)
+
+static const char* fragmentShader = "				\n\
+	#version 330									\n\
+													\n\
+	uniform in vec3 colorArr;						\n\
+													\n\
+	void main(){									\n\
+		color = vec4(colorArr, 1.0)					\n\
+	}												\n\
+"; //mudança de caracteristicas dado um ponto (forma de transferencia de dados: uniform)
+
+
+void createTriangle() {
+	GLfloat vertices[] = {
+		0.0f, 1.0f, //v1
+		-1.0f, -1.0f, //v2
+		1.0f, -1.0f //v3
+	};
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0); //location
+	glBindBuffer(GL_ARRAY_BUFFER,0);
+	glBindVertexArray(0);
+}
+
+void addTriangle(GLuint program, const char* shaderCode, GLenum type_program) {
+	GLuint _shader = glCreateShader(type_program);
+	const GLchar* glCharCode[1];
+	glCharCode[0] = shaderCode;
+	glShaderSource(_shader, 1, glCharCode,NULL);
+	glCompileShader(_shader);
+	glAttachShader(program, _shader);
+}
+
+void addProgram() {
+	shaderProgram = glCreateProgram();
+	if (!shaderProgram) {
+		cout << "Erro ao criar o programa!";
+		return; 
+	}
+	addTriangle(shaderProgram, vertexShader, GL_VERTEX_SHADER);
+	addTriangle(shaderProgram, fragmentShader, GL_FRAGMENT_SHADER);
+	glLinkProgram(shaderProgram);
+}
 
 int main() {
 	// inicando GLFW
